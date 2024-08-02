@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA2111027020074</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        textarea {
+            width: 50%;
+            height: 100px;
+            margin: 20px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+        }
+        h2 {
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>BAJAJ TEST</h1>
+    <textarea id="jsonInput" placeholder='Enter JSON like {"data": ["A","C","z"]}'></textarea>
+    <button onclick="submitJson()">Submit</button>
+    <div>
+        <label>
+            <input type="checkbox" id="toggleCharacters" checked>
+            Characters
+        </label>
+        <label>
+            <input type="checkbox" id="toggleNumbers" checked>
+            Numbers
+        </label>
+        <label>
+            <input type="checkbox" id="toggleHighestAlphabet" checked>
+            Highest Alphabet
+        </label>
+    </div>
+    <div id="responseSection">
+        <div id="charactersSection">
+            <h2>Characters</h2>
+            <pre id="characters"></pre>
+        </div>
+        <div id="numbersSection">
+            <h2>Numbers</h2>
+            <pre id="numbers"></pre>
+        </div>
+        <div id="highestAlphabetSection">
+            <h2>Highest Alphabet</h2>
+            <pre id="highestAlphabet"></pre>
+        </div>
+    </div>
+    <script>
+        function submitJson() {
+            const jsonInput = document.getElementById('jsonInput').value;
+            try {
+                JSON.parse(jsonInput); 
+                fetch('/bfhl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: jsonInput
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_success) {
+                        document.getElementById('characters').innerText = data.alphabets.join(', ');
+                        document.getElementById('numbers').innerText = data.numbers.join(', ');
+                        document.getElementById('highestAlphabet').innerText = data.highest_alphabet.join(', ');
+                        toggleSections();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Invalid JSON or server error');
+                });
+            } catch (error) {
+                alert('Invalid JSON format');
+            }
+        }
+
+        function toggleSections() {
+            document.getElementById('charactersSection').style.display = document.getElementById('toggleCharacters').checked ? 'block' : 'none';
+            document.getElementById('numbersSection').style.display = document.getElementById('toggleNumbers').checked ? 'block' : 'none';
+            document.getElementById('highestAlphabetSection').style.display = document.getElementById('toggleHighestAlphabet').checked ? 'block' : 'none';
+        }
+
+        document.getElementById('toggleCharacters').addEventListener('change', toggleSections);
+        document.getElementById('toggleNumbers').addEventListener('change', toggleSections);
+        document.getElementById('toggleHighestAlphabet').addEventListener('change', toggleSections);
+    </script>
+</body>
+</html>
